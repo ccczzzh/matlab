@@ -1,0 +1,16 @@
+Boundary contion input file for 2DElasticity
+================================================
+DBC Data (Node#  DOF#  Value#)
+     1     1     0
+     1     2     0
+     2     1     0
+     2     2     0
+     3     1     0
+     3     2     0
+================================================
+NBC Data (Node#  DOF#  Value#)
+    7     2    25
+    8     2    50
+    9     2    25
+================================================
+MBC Data (Node# DOF#  Value1#  Value2#)

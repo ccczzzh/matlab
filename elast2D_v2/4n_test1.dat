@@ -1,0 +1,66 @@
+TITLE = test
+
+NUMBER_OF_NODES_PRE_ELEMENT = 4
+
+NUMBER_OF_INTEGRATION_POINTS = 49
+
+NUMBER_OF_GAUSS_POINTS = 16
+
+ANALYSIS_TYPE = 1
+
+ELEMENTS = 10
+1    1  2  6  5
+2    2  3  7  6
+3    3  4  8  7
+4    5  6 10  9
+5    7  8 12 11
+6    9 10 14 13
+7   11 12 16 15
+8   13 14 18 17
+9   14 15 19 18
+10  15 16 20 19
+
+NODE_COORDINATES = 20
+1     0    0
+2     1    0
+3     2    0
+4     3    0
+5     0    1
+6     1    1
+7     2    1
+8     3    1
+9     0    2
+10    1    2
+11    2    2
+12    3    2
+13    0    3
+14    1    3
+15    2    3
+16    3    3
+17    0    4
+18    1    4
+19    2    4
+20    3    4
+
+THICKNESS = 1
+
+NODES_WITH_PRESCRIBED_DISPLACEMENTS = 2
+1	11	0.000	0.000	
+4	01	0.000	0.000	
+
+YOUNG_MODULUS = 200000.0
+
+POISSON_RATIO = 0.3
+
+POINT_LOADS = 9
+4   2  0.0
+5  -1.0  0.0
+8   1.0  0.0
+9  -1.0  0.0
+12  1.0  0.0
+13 -1.0  0.0
+16  1.0  0.0
+17 -2  0.0
+20  2  0.0
+
+PLOTTING_AMPLIFICATION_FACTOR = 10000

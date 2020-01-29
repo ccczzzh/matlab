@@ -1,0 +1,171 @@
+classdef JaphySolid
+    % JaphySolid
+    %   finite element model (mesh and boundary data, physics, ...)
+    
+    properties    
+        ndm    % number of spatial dimension (the code is suitable for 2D)
+        nel    % number of elements
+        np     % number of node points
+        ndf    % number of degrees of freedom at each node
+        nen    % number of nodes at each element
+        ndbc   % number of nodes with Dirichlet boundary conditions
+        nnbc   % number of nodes with Neumann boundary conditions
+        nrbc   % number of nodes with Robin boundary conditions 
+        tdf    % number of degrees of freedom of the total nodes
+        x0     % initial nodal coordinates
+        x      % current nodal coordinates
+        un     % solution variables at previous time step
+        u      % solution variables at current tems step
+        dun    % time derivative of solution variables at previous time step 
+        du     % time derivative of solution variables at current time step
+        elc    % element connectivity matrix
+        vdbc   % Dirichlet boundary values
+        vnbc   % Neumann boundary values
+        vrbc   % Robin boundary values
+        eltype % element type (triangular or quadrilateral) 
+        elpar  % element and physics parameters 
+        idd    % Dirichlet boundaries and condensed dof numbering
+        idn    % Neumann boundaries numbering matrix
+        idr    % Robin boundaries numbering matrix
+        lm0    % location matrix associates local dofs with global dofs
+               %  before applying constraints
+        lm     % location matrix associates local dofs with global dofs
+               %  after applying constraints
+        R      % global residual vector
+        K      % gloabl stiffness matrix
+    end
+    
+    
+    
+    
+    methods
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %       constructor, creates the object from input data file      %  
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function obj = JaphySolid()
+            
+            % Read the input data file
+            display('reading the input data file ....');
+
+            [obj.ndm,obj.ndf,obj.eltype,obj.nel,obj.np,obj.nen,...
+                obj.elpar,obj.x0,obj.elc,obj.ndbc,obj.nnbc,obj.nrbc,...
+                obj.vdbc,obj.vnbc,obj.vrbc] = readInputFile(); 
+            
+            % Generate location matrix lm0 and lm
+            [obj.tdf,obj.idd,obj.idn,obj.idr,obj.lm0,obj.lm] = ...
+                generateLocMatrix(obj.np,obj.ndf,obj.nel,obj.nen,...
+                obj.elc,obj.vdbc,obj.vnbc,obj.vrbc);
+        end
+        
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %                 solve and update the properties                 %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function obj = solveAndUpdate(obj)
+
+            display('solving and updating ....');
+             
+            %==============================================================
+            % Read the boundary condition data and element properties
+            %==============================================================
+            [dVal,nVal,~] = readBCdata(obj.idd,obj.idn,obj.idr);
+
+            ngp     = obj.elpar(2);    % number of Gauss points
+            E       = obj.elpar(4);    % Young's mudulus
+            mu      = obj.elpar(5);    % Poisson's ratio
+            
+            
+            
+            %==============================================================
+            % Set up Gauss Quadrature points and weights for triangular and
+            % quadrilateral elements
+            %==============================================================
+            GQ = calcGaussPoint(obj.eltype,ngp);
+            
+
+            
+            %==============================================================
+            % Calculate the constitutive matrix D
+            % problem identification opt: 
+            % 1 ---> plane stress; 2 ---> plane stran; 3 ---> axisymmetry
+            %==============================================================
+            opt = 1; 
+            D = calcConstituMatrix(E,mu,opt); 
+            
+            
+            
+            %==============================================================
+            % Prescribe the force boundary condition
+            %==============================================================
+            F = zeros(obj.tdf,1);
+            iddtr = obj.idd';
+            id1col = iddtr(:); % rearrange id1 array into a column vector 
+            F(id1col(nVal(:,1))) = nVal(:,2);
+            
+
+            
+            %==============================================================          
+            % Initialize the solution and set parametres for the load
+            % increment.
+            %==============================================================
+            obj.u = zeros(obj.np*obj.ndf,1);   % solution for all nodes
+            eldof = obj.nen * obj.ndf;  % number of dofs in each element
+            
+            % load increment setting
+            numLoadIncr = 5;     % number of load increments
+            Fincr = F / numLoadIncr;
+
+            
+            
+            %==============================================================
+            % Start the load loop
+            %==============================================================
+            for n = 1:numLoadIncr
+                
+                Fn =  n * Fincr;   % current load
+            
+                % Initialize the global stiffness
+                obj.K = zeros(obj.tdf,obj.tdf);
+                
+                %==========================================================
+                % Calculate global stiffness
+                %==========================================================
+                for e = 1:obj.nel    % Loop over elements
+
+                    % Calculate the local stiffness.
+                    [ke] = calcLocalSystem(eldof,ngp,D,...
+                        obj.nen,obj.eltype,obj.x0,obj.elc,e,GQ);
+
+                    
+                    [obj.K,Fn] = assembly(obj.K,Fn,ke,obj.lm0(:,e),...
+                        obj.lm(:,e),obj.u,eldof,dVal);
+                     
+                end     % end of loop over elements
+
+            
+                % Solves the equation and rearrange the solution
+                uSol = obj.K \ Fn;            
+            
+                % Do mapping of the solution.
+                obj.u(dVal(:,1)) = dVal(:,2);
+                obj.u(obj.idd'>0) = uSol;
+                
+            end   % end of load loop
+            
+            % post processor
+            % display the solution
+            fprintf(1,'\nCalculated unknowns are \n\n');
+            fprintf(1,' Node              x                  y                   ux                    uy \n');
+            fprintf(1,'======================================================================================\n');
+            for i = 1:obj.np
+                fprintf(1, ' %-5d %18.8f %18.8f %20.8f %20.8f\n', i, obj.x0(i,1), obj.x0(i,2), ...
+                    obj.u(2*(i-1)+1),  obj.u(2*(i-1)+2));
+            end
+            toc;
+        end   % end of solveAndUpdate
+    end    % end of methods
+    
+    
+end    % end of the class
