@@ -1,4 +1,4 @@
-function [nn,ne,nodemap,Gcoord] = MeshGenerate(length,height,seedx,seedy,eltype)
+function [nn,ne,nodemap,Gcoord,localnodemap,nodemapreduce,NewGcoord,Newnodemap,Lcoord] = MeshGenerate(length,height,seedx,seedy,eltype,ndim)
 % length = input('Enter the length of the component:');
 % 
 % height = input('Enter the height of the component:');
@@ -55,8 +55,15 @@ elseif eltype == 4
          nodemap(inen+(layer-1)*(seedx-1),:) = [inen+(layer-1)*seedx, inen+1+(layer-1)*seedx, inen+seedx+1+(layer-1)*seedx, inen+seedx+(layer-1)*seedx]; 
       end
    end
+   
+   localrefineno = 5;
+   localx = 4;localy = 4;
+   [nodemap,localnodemap,nodemapreduce,Newnodemap,Lcoord,NewGcoord]=localrefinemesh(Gcoord,nodemap,ne,nn,eltype,localrefineno,localx,localy,ndim);
 end
-PlotMesh(Gcoord,nodemap,ne,nn,eltype)
+
+ne = ne-  1 + (localx-1)*(localy-1);
+nn = nn - 4 + localx*localy; 
+PlotMesh(NewGcoord,Newnodemap,ne,nn,eltype)
 
 
 

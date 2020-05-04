@@ -20,7 +20,7 @@
 clc;clear all;close all;
 % fid1 = input('Input Data File Name: ','s');
 % finp = fopen(fid1,'r');
-finp = fopen('FEM2D.inp');
+finp = fopen('FEM2D_mesh.inp');
 % fid2 = input('Input Data File Name: ','s');
 % foup = fopen(fid2,'w');
 

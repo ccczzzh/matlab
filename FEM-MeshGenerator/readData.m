@@ -1,4 +1,4 @@
-function [dn,U,F,mp,nodemap,nd,ndim,ndn,ne,nen,nl,nm,nn,np,coord,TH,MAT,nq,LC,NGP] = readData(finp)
+function [dn,U,F,mp,Newnodemap,nd,ndim,ndn,ne,nen,nl,nm,nn,np,NewGcoord,TH,MAT,nq,LC,NGP] = readData(finp)
 % disp('  1) Plane Stress Analysis');
 % disp('  2) Plane Strain Analysis');
 % LC = input('  Choose 1(default) or 2 :');
@@ -33,7 +33,7 @@ TMP = str2num(fgets(finp));
 %         deal(TMP(1),TMP(2:1+nen),TMP(2+nen),TMP(3+nen));
 % end
 %------------------
-[nn,ne,nodemap,coord] = MeshGenerate(X,Y,SeedX,SeedY,nen);
+[nn,ne,nodemap,Gcoord,localnodemap,nodemapreduce,NewGcoord,Newnodemap,Lcoord] = MeshGenerate(X,Y,SeedX,SeedY,nen,ndim);
 MAT = zeros(ne,1);
 MAT(:,1) = 1;
 TH = zeros(ne,1);
