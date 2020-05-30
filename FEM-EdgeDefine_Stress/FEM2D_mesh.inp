@@ -1,0 +1,19 @@
+FEM 2D problem
+X   Y   NM  NDIM   NEN NDN
+20  2   1    2     4   2
+NMPC NP NGP
+ 0   3   1  
+Seedx   Seedy   LM
+  4      5      0 
+Fixed End
+edge    X   Y   value
+ 1      1   1    0
+Load End
+edge    X   Y   value
+ 3      0   1   -1000
+MAT   E     Nu    thickness
+ 1  210e3   0.3      1000
+locationrefine  localx  localy 
+	1               4       4
+    4               4       4
+    7               4       4

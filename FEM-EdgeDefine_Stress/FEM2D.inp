@@ -1,0 +1,20 @@
+FEM 2D problem
+X   Y   NM  NDIM   NEN NDN
+7   2   1    2     3   2
+ND  NL  NMPC NP NGP
+ 6  3    0   3   7  
+SeedX   SeedY
+  8       3   
+DOF     Displacement
+  1         0
+  2         0
+  17        0
+  18        0
+  33        0
+  34        0  
+DOF     Load
+ 16      -10
+ 32      -10
+ 48      -10
+MAT   E     Nu    ALPHA
+ 1  1000   0.25     0
