@@ -53,35 +53,35 @@ UXnew = Unew(:,1);UYnew = Unew(:,2);
 % %------------------------------------------
 % %        Stress Calculation
 % %------------------------------------------
-% % % % for n = 1:ne
-% % % %     n1 = nc(n,1);n2 = nc(n,2);n3=MAT(n);
-% % % %     PR = (F(n2)-F(n1))/(U(n2)-U(n1));
-% % % %     S(n) = mp(n3,1)*PR;  
-% % % % end
-% % % % count = 1;
-% % % % for i = 1:ne
-% % % %     
-% % % %     for j = 1:nen
-% % % %         if j == nen
-% % % %             x2 = (UX(node(i,j))-UX(node(i,1)))^2;
-% % % %             y2 = (UY(node(i,j))-UY(node(i,1)))^2;
-% % % %             x21 = (UXnew(node(i,j))-UXnew(node(i,1)))^2;
-% % % %             y21 = (UYnew(node(i,j))-UYnew(node(i,1)))^2;
-% % % %         else
-% % % %             x2 = (UX(node(i,j))-UX(node(i,(j+1))))^2;
-% % % %             y2 = (UY(node(i,j))-UY(node(i,(j+1))))^2;
-% % % %             x21 = (UXnew(node(i,j))-UXnew(node(i,(j+1))))^2;
-% % % %             y21 = (UYnew(node(i,j))-UYnew(node(i,(j+1))))^2;
-% % % %         end
-% % % %         original_length(count) = sqrt(x2+y2);
-% % % %         delta_length(count) = sqrt(x21+y21);
-% % % %         count = count + 1;
-% % % %     end
-% % % % end
-% % % % epsilone = delta_length./original_length;
-% % % % S = mp(1).*epsilone;
+% for n = 1:ne
+%     n1 = nc(n,1);n2 = nc(n,2);n3=MAT(n);
+%     PR = (F(n2)-F(n1))/(U(n2)-U(n1));
+%     S(n) = mp(n3,1)*PR;  
+% end
+% count = 1;
+% for i = 1:ne
+%     
+%     for j = 1:nen
+%         if j == nen
+%             x2 = (UX(node(i,j))-UX(node(i,1)))^2;
+%             y2 = (UY(node(i,j))-UY(node(i,1)))^2;
+%             x21 = (UXnew(node(i,j))-UXnew(node(i,1)))^2;
+%             y21 = (UYnew(node(i,j))-UYnew(node(i,1)))^2;
+%         else
+%             x2 = (UX(node(i,j))-UX(node(i,(j+1))))^2;
+%             y2 = (UY(node(i,j))-UY(node(i,(j+1))))^2;
+%             x21 = (UXnew(node(i,j))-UXnew(node(i,(j+1))))^2;
+%             y21 = (UYnew(node(i,j))-UYnew(node(i,(j+1))))^2;
+%         end
+%         original_length(count) = sqrt(x2+y2);
+%         delta_length(count) = sqrt(x21+y21);
+%         count = count + 1;
+%     end
+% end
+% epsilone = delta_length./original_length;
+% S = mp(1).*epsilone;
 
-% e_strain = D * B %.* U
+
 count = 1;
 local_U = zeros(nen*2,ne);
 for i = 1:ne
@@ -95,13 +95,31 @@ for i = 1:ne
 %     local_uy(1:count*3,i) = U(location2);
 %     count = count +1;
 end
-Stress = D * B * local_U
+Stress_tensor = D * B * local_U;
+for i = 1:ne
+    stress(i) = det([Stress_tensor(1,i) 0 0;0 Stress_tensor(2,i) 0; 0 0 Stress_tensor(3,i)]);
+end
+
 %-----------------------------------------------------
 %                       Plot Mesh
 %-----------------------------------------------------
 PlotMesh(nodecoord,node,ne,nn,nen);
 Unew = nodecoord + Unew;
 PlotdeformMesh(Unew,node,ne,nen);
+%PlotdeStressMesh(Unew,node,ne,nen,stress);
+fill_color = linspace(1,10,10);
+stress_range = max(stress)-min(stress);
+
+for is = 1:ne
+    for i = 1:10
+        stress_gap = stress_range/10;
+        if stress(is) >= stress_gap*(i-1) && stress(is)< stress_gap*i
+            map_color(is) = fill_color(i);
+            continue
+        end
+    end
+end
+
 fprintf(1,'\nCalculated unknowns are \n\n');
 fprintf(' Node              x                  y                   ux                    uy \n');
 fprintf(1,'======================================================================================\n');
