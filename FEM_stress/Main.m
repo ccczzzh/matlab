@@ -58,47 +58,79 @@ UXnew = Unew(:,1);UYnew = Unew(:,2);
 %     PR = (F(n2)-F(n1))/(U(n2)-U(n1));
 %     S(n) = mp(n3,1)*PR;  
 % end
-% count = 1;
-% for i = 1:ne
-%     
-%     for j = 1:nen
-%         if j == nen
-%             x2 = (UX(node(i,j))-UX(node(i,1)))^2;
-%             y2 = (UY(node(i,j))-UY(node(i,1)))^2;
-%             x21 = (UXnew(node(i,j))-UXnew(node(i,1)))^2;
-%             y21 = (UYnew(node(i,j))-UYnew(node(i,1)))^2;
-%         else
-%             x2 = (UX(node(i,j))-UX(node(i,(j+1))))^2;
-%             y2 = (UY(node(i,j))-UY(node(i,(j+1))))^2;
-%             x21 = (UXnew(node(i,j))-UXnew(node(i,(j+1))))^2;
-%             y21 = (UYnew(node(i,j))-UYnew(node(i,(j+1))))^2;
-%         end
-%         original_length(count) = sqrt(x2+y2);
-%         delta_length(count) = sqrt(x21+y21);
-%         count = count + 1;
-%     end
-% end
-% epsilone = delta_length./original_length;
-% S = mp(1).*epsilone;
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%
 count = 1;
-local_U = zeros(nen*2,ne);
 for i = 1:ne
-    local_ux(:,i) = UXnew(node(i,:));
-    local_uy(:,i) = UYnew(node(i,:));
-    local_U(1:3,i) = local_ux(:,i);
-    local_U(4:6,i) = local_uy(:,i);
+    
+    for j = 1:nen
+        if j == nen
+            x2 = (UX(node(i,j))-UX(node(i,1)))^2;
+            y2 = (UY(node(i,j))-UY(node(i,1)))^2;
+            x21 = (UXnew(node(i,j))-UXnew(node(i,1)))^2;
+            y21 = (UYnew(node(i,j))-UYnew(node(i,1)))^2;
+        else
+            x2 = (UX(node(i,j))-UX(node(i,(j+1))))^2;
+            y2 = (UY(node(i,j))-UY(node(i,(j+1))))^2;
+            x21 = (UXnew(node(i,j))-UXnew(node(i,(j+1))))^2;
+            y21 = (UYnew(node(i,j))-UYnew(node(i,(j+1))))^2;
+        end
+        original_length(count) = sqrt(x2+y2); 
+        delta_length(count) = sqrt(x21+y21);
+        count = count + 1;
+    end
+end
+epsilone = delta_length./original_length;
+S = mp(1).*epsilone;
 
-%     local_ux(1:count*3,i) = U(location1);
-%     
-%     local_uy(1:count*3,i) = U(location2);
-%     count = count +1;
-end
-Stress_tensor = D * B * local_U;
 for i = 1:ne
-    stress(i) = det([Stress_tensor(1,i) 0 0;0 Stress_tensor(2,i) 0; 0 0 Stress_tensor(3,i)]);
+   meshmaping(i,:) = [node(i,1) node(i,2) node(i,3) node(i,1)];
 end
+
+
+node = node';
+count = 1;
+for j = 1 : ne
+    for i =1:nen
+       inode(count) = node(i,j); 
+       count= count+1;
+    end
+end
+[~,n]=size(S);
+nodeStress = zeros(1,nn);
+count = 1;
+
+for j = 1:nn
+    for i = 1:n
+        if inode(i) == j
+            nodeStress(j) = nodeStress(j) + S(i);
+            continue
+        end
+    end
+end
+% X and Y coordinate for meshing Stress
+
+
+% UX = UX';UY = UY';
+
+node = node';
+
+% count = 1;
+% local_U = zeros(nen*2,ne);
+% for i = 1:ne
+%     local_ux(:,i) = UXnew(node(i,:));
+%     local_uy(:,i) = UYnew(node(i,:));
+%     local_U(1:3,i) = local_ux(:,i);
+%     local_U(4:6,i) = local_uy(:,i);
+% 
+% %     local_ux(1:count*3,i) = U(location1);
+% %     
+% %     local_uy(1:count*3,i) = U(location2);
+% %     count = count +1;
+% end
+% Stress_tensor = D * B * local_U;
+% for i = 1:ne
+%     stress(i) = det([Stress_tensor(1,i) 0 0;0 Stress_tensor(2,i) 0; 0 0 Stress_tensor(3,i)]);
+% end
 
 %-----------------------------------------------------
 %                       Plot Mesh
@@ -106,20 +138,34 @@ end
 PlotMesh(nodecoord,node,ne,nn,nen);
 Unew = nodecoord + Unew;
 PlotdeformMesh(Unew,node,ne,nen);
-%PlotdeStressMesh(Unew,node,ne,nen,stress);
-fill_color = linspace(1,10,10);
-stress_range = max(stress)-min(stress);
-
-for is = 1:ne
-    for i = 1:10
-        stress_gap = stress_range/10;
-        if stress(is) >= stress_gap*(i-1) && stress(is)< stress_gap*i
-            map_color(is) = fill_color(i);
-            continue
-        end
-    end
+% %PlotdeStressMesh(Unew,node,ne,nen,stress);
+% fill_color = linspace(1,10,10);
+% stress_range = max(stress)-min(stress);
+% 
+% for is = 1:ne
+%     for i = 1:10
+%         stress_gap = stress_range/10;
+%         if stress(is) >= stress_gap*(i-1) && stress(is)< stress_gap*i
+%             map_color(is) = fill_color(i);
+%             continue
+%         end
+%     end
+% end
+UXnew = Unew(:,1);UYnew = Unew(:,2);
+for i = 1:ne
+   meshX(i,:) = UXnew(meshmaping(i,:));
+   meshY(i,:) = UYnew(meshmaping(i,:));
+   meshStress(i,:) = nodeStress(meshmaping(i,:));
 end
-
+figure;
+for i = 1:ne
+    fill(meshX(i,:),meshY(i,:),meshStress(i,:))
+    hold on;
+end
+%shading interp;
+hold off
+colorbar;
+axis equal
 fprintf(1,'\nCalculated unknowns are \n\n');
 fprintf(' Node              x                  y                   ux                    uy \n');
 fprintf(1,'======================================================================================\n');
