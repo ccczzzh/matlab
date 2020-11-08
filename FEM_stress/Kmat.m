@@ -1,4 +1,4 @@
-function [K,B] = Kmat(nq,nen,node,ndim,nodecoord,NGP,GQ,D,ne)
+function [K,B,Jacob] = Kmat(nq,nen,node,ndim,nodecoord,NGP,GQ,D,ne)
 
 Kinitial = zeros(nq,nq);
 K = Kinitial;

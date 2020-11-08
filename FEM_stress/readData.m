@@ -1,4 +1,4 @@
-function [dn,nn,U,F,mp,nodemap,ndim,ne,nen,coord,TH,MAT,nq,LC,NGP] = readData(finp)
+function [dn,nn,U,F,mp,nodemap,ndim,ne,nen,coord,TH,MAT,nq,LC,NGP,ndn] = readData(finp)
 disp('  1) Plane Stress Analysis');
 disp('  2) Plane Strain Analysis');
 % LC = input('  Choose 1(default) or 2 :');

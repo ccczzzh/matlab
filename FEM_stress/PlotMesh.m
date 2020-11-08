@@ -11,10 +11,10 @@ Y = zeros(nen,ne) ;
 % Z = zeros(nen,ne) ;
 
 if dimension == 2
-    for i = 1:ne
+    for i = 1:nen
         nd = node(i,:);
-        X(:,i) = nodecoord(nd,1);
-        Y(:,i) = nodecoord(nd,2);
+        X(i,:) = nodecoord(nd,1);
+        Y(i,:) = nodecoord(nd,2);
     end
     
     figure; fill(X,Y,'w');

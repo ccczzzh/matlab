@@ -5,10 +5,10 @@ for i = 1:ne
     rho = mp(M,2);
     alpha = mp(M,3);
     %--- D() Matrix
-    if(LC == 1)
+    if LC == 1
         C1 = (E*TH(i))/(1-rho^2);
         C2 = C1*rho;
-    else
+    elseif LC == 2
         C = (E*TH(i))/((1+rho)*(1-2*rho));
         C1 = C*(1-rho);
         C2 = C * rho;
